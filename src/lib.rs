@@ -14,7 +14,6 @@ use std::slice::{Iter, IterMut};
 use std::ops::{Index, IndexMut};
 
 pub use ansi_term::{Color, Style};
-pub(crate) use term::{Terminal, stdout};
 
 mod cell;
 mod row;

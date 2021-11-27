@@ -472,55 +472,55 @@ mod tests {
         assert_eq!(out.as_string(), "      test");
     }
 
-    #[test]
-    fn style_spec() {
-        let mut cell = Cell::new("test").style_spec("FrBBbuic");
-        assert_eq!(cell.style.len(), 5);
-        assert!(cell.style.contains(&Attr::Underline(true)));
-        assert!(cell.style.contains(&Attr::Italic(true)));
-        assert!(cell.style.contains(&Attr::Bold));
-        assert!(cell.style.contains(&Attr::ForegroundColor(color::RED)));
-        assert!(
-            cell.style
-                .contains(&Attr::BackgroundColor(color::BRIGHT_BLUE))
-        );
-        assert_eq!(cell.align, Alignment::CENTER);
+    // #[test]
+    // fn style_spec() {
+    //     let mut cell = Cell::new("test").style_spec("FrBBbuic");
+    //     assert_eq!(cell.style.len(), 5);
+    //     assert!(cell.style.contains(&Attr::Underline(true)));
+    //     assert!(cell.style.contains(&Attr::Italic(true)));
+    //     assert!(cell.style.contains(&Attr::Bold));
+    //     assert!(cell.style.contains(&Attr::ForegroundColor(color::RED)));
+    //     assert!(
+    //         cell.style
+    //             .contains(&Attr::BackgroundColor(color::BRIGHT_BLUE))
+    //     );
+    //     assert_eq!(cell.align, Alignment::CENTER);
+    //
+    //     cell = cell.style_spec("FDBwr");
+    //     assert_eq!(cell.style.len(), 2);
+    //     assert!(
+    //         cell.style
+    //             .contains(&Attr::ForegroundColor(color::BRIGHT_BLACK))
+    //     );
+    //     assert!(cell.style.contains(&Attr::BackgroundColor(color::WHITE)));
+    //     assert_eq!(cell.align, Alignment::RIGHT);
+    //
+    //     // Test with invalid sepcifier chars
+    //     cell = cell.clone();
+    //     cell = cell.style_spec("FzBr");
+    //     assert!(cell.style.contains(&Attr::BackgroundColor(color::RED)));
+    //     assert_eq!(cell.style.len(), 1);
+    //     cell = cell.style_spec("zzz");
+    //     assert!(cell.style.is_empty());
+    //     assert_eq!(cell.get_hspan(), 1);
+    //     cell = cell.style_spec("FDBwH03r");
+    //     assert_eq!(cell.get_hspan(), 3);
+    // }
 
-        cell = cell.style_spec("FDBwr");
-        assert_eq!(cell.style.len(), 2);
-        assert!(
-            cell.style
-                .contains(&Attr::ForegroundColor(color::BRIGHT_BLACK))
-        );
-        assert!(cell.style.contains(&Attr::BackgroundColor(color::WHITE)));
-        assert_eq!(cell.align, Alignment::RIGHT);
-
-        // Test with invalid sepcifier chars
-        cell = cell.clone();
-        cell = cell.style_spec("FzBr");
-        assert!(cell.style.contains(&Attr::BackgroundColor(color::RED)));
-        assert_eq!(cell.style.len(), 1);
-        cell = cell.style_spec("zzz");
-        assert!(cell.style.is_empty());
-        assert_eq!(cell.get_hspan(), 1);
-        cell = cell.style_spec("FDBwH03r");
-        assert_eq!(cell.get_hspan(), 3);
-    }
-
-    #[test]
-    fn reset_style() {
-        let mut cell = Cell::new("test")
-            .with_style(Attr::ForegroundColor(color::BRIGHT_BLACK))
-            .with_style(Attr::BackgroundColor(color::WHITE));
-        cell.align(Alignment::RIGHT);
-
-        //style_spec("FDBwr");
-        assert_eq!(cell.style.len(), 2);
-        assert_eq!(cell.align, Alignment::RIGHT);
-        cell.reset_style();
-        assert_eq!(cell.style.len(), 0);
-        assert_eq!(cell.align, Alignment::LEFT);
-    }
+    // #[test]
+    // fn reset_style() {
+    //     let mut cell = Cell::new("test")
+    //         .with_style(Attr::ForegroundColor(color::BRIGHT_BLACK))
+    //         .with_style(Attr::BackgroundColor(color::WHITE));
+    //     cell.align(Alignment::RIGHT);
+    //
+    //     //style_spec("FDBwr");
+    //     assert_eq!(cell.style.len(), 2);
+    //     assert_eq!(cell.align, Alignment::RIGHT);
+    //     cell.reset_style();
+    //     assert_eq!(cell.style.len(), 0);
+    //     assert_eq!(cell.align, Alignment::LEFT);
+    // }
 
     #[test]
     fn default_empty_cell() {
