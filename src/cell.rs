@@ -2,7 +2,7 @@
 
 use super::format::Alignment;
 use super::utils::{display_width, print_align, HtmlEscape};
-use super::{color, Attr, Terminal};
+use super::{Color, Style};
 use std::io::{Error, Write};
 use std::string::ToString;
 use std::str::FromStr;
@@ -16,7 +16,7 @@ pub struct Cell {
     content: Vec<String>,
     width: usize,
     align: Alignment,
-    style: Vec<Attr>,
+    style: Style,
     hspan: usize,
 }
 
@@ -33,10 +33,10 @@ impl Cell {
             }
         }
         Cell {
-            content: content,
-            width: width,
-            align: align,
-            style: Vec::new(),
+            content,
+            width,
+            align,
+            style: Style::new(),
             hspan: 1,
         }
     }
@@ -53,13 +53,13 @@ impl Cell {
     }
 
     /// Add a style attribute to the cell
-    pub fn style(&mut self, attr: Attr) {
-        self.style.push(attr);
+    pub fn style(&mut self, style: Style) {
+        self.style.push(style);
     }
 
     /// Add a style attribute to the cell. Can be chained
-    pub fn with_style(mut self, attr: Attr) -> Cell {
-        self.style(attr);
+    pub fn with_style(mut self, style: Style) -> Cell {
+        self.style = style;
         self
     }
 
@@ -71,7 +71,7 @@ impl Cell {
 
     /// Remove all style attributes and reset alignment to default (LEFT)
     pub fn reset_style(&mut self) {
-        self.style.clear();
+        self.style = Style::new();
         self.align(Alignment::LEFT);
     }
 
@@ -120,22 +120,14 @@ impl Cell {
         while let Some(c) = it.next() {
             if foreground || background {
                 let color = match c {
-                    'r' => color::RED,
-                    'R' => color::BRIGHT_RED,
-                    'b' => color::BLUE,
-                    'B' => color::BRIGHT_BLUE,
-                    'g' => color::GREEN,
-                    'G' => color::BRIGHT_GREEN,
-                    'y' => color::YELLOW,
-                    'Y' => color::BRIGHT_YELLOW,
-                    'c' => color::CYAN,
-                    'C' => color::BRIGHT_CYAN,
-                    'm' => color::MAGENTA,
-                    'M' => color::BRIGHT_MAGENTA,
-                    'w' => color::WHITE,
-                    'W' => color::BRIGHT_WHITE,
-                    'd' => color::BLACK,
-                    'D' => color::BRIGHT_BLACK,
+                    'r' | 'R' => Color::Red,
+                    'b' | 'B' => Color::Blue,
+                    'g' | 'G' => Color::Green,
+                    'y' | 'Y' => Color::Yellow,
+                    'c' | 'C' => Color::Cyan,
+                    'm' | 'M' => Color::Purple,
+                    'w' | 'W' => Color::White,
+                    'd' | 'D' => Color::Black,
                     _ => {
                         // Silently ignore unknown tags
                         foreground = false;
@@ -143,10 +135,16 @@ impl Cell {
                         continue;
                     }
                 };
+
+                match c {
+                    'r' | 'b' | 'g' | 'y' | 'c' | 'm' | 'w' | 'd'  => self.style = self.style.dimmed(),
+                    _ => {}
+                };
+
                 if foreground {
-                    self.style(Attr::ForegroundColor(color));
+                    self.style = self.style.fg(color);
                 } else if background {
-                    self.style(Attr::BackgroundColor(color));
+                    self.style = self.style.on(color);
                 }
                 foreground = false;
                 background = false;
@@ -154,9 +152,9 @@ impl Cell {
                 match c {
                     'F' => foreground = true,
                     'B' => background = true,
-                    'b' => self.style(Attr::Bold),
-                    'i' => self.style(Attr::Italic(true)),
-                    'u' => self.style(Attr::Underline(true)),
+                    'b' => self.style(Style::new().bold()),
+                    'i' => self.style(Style::new().italic()),
+                    'u' => self.style(Style::new().underline()),
                     'c' => self.align(Alignment::CENTER),
                     'l' => self.align(Alignment::LEFT),
                     'r' => self.align(Alignment::RIGHT),
@@ -246,29 +244,29 @@ impl Cell {
     /// Print the cell in HTML format to `out`.
     pub fn print_html<T: Write + ?Sized>(&self, out: &mut T) -> Result<usize, Error> {
         /// Convert the color to a hex value useful in CSS
-        fn color2hex(color: color::Color) -> &'static str {
-            match color {
-                color::BLACK => "#000000",
-                color::RED => "#aa0000",
-                color::GREEN => "#00aa00",
-                color::YELLOW => "#aa5500",
-                color::BLUE => "#0000aa",
-                color::MAGENTA => "#aa00aa",
-                color::CYAN => "#00aaaa",
-                color::WHITE => "#aaaaaa",
-                color::BRIGHT_BLACK => "#555555",
-                color::BRIGHT_RED => "#ff5555",
-                color::BRIGHT_GREEN => "#55ff55",
-                color::BRIGHT_YELLOW => "#ffff55",
-                color::BRIGHT_BLUE => "#5555ff",
-                color::BRIGHT_MAGENTA => "#ff55ff",
-                color::BRIGHT_CYAN => "#55ffff",
-                color::BRIGHT_WHITE => "#ffffff",
-
-                // Unknown colors, fallback to blakc
-                _ => "#000000",
-            }
-        };
+        // fn color2hex(color: color::Color) -> &'static str {
+        //     match color {
+        //         color::BLACK => "#000000",
+        //         color::RED => "#aa0000",
+        //         color::GREEN => "#00aa00",
+        //         color::YELLOW => "#aa5500",
+        //         color::BLUE => "#0000aa",
+        //         color::MAGENTA => "#aa00aa",
+        //         color::CYAN => "#00aaaa",
+        //         color::WHITE => "#aaaaaa",
+        //         color::BRIGHT_BLACK => "#555555",
+        //         color::BRIGHT_RED => "#ff5555",
+        //         color::BRIGHT_GREEN => "#55ff55",
+        //         color::BRIGHT_YELLOW => "#ffff55",
+        //         color::BRIGHT_BLUE => "#5555ff",
+        //         color::BRIGHT_MAGENTA => "#ff55ff",
+        //         color::BRIGHT_CYAN => "#55ffff",
+        //         color::BRIGHT_WHITE => "#ffffff",
+        //
+        //         // Unknown colors, fallback to blakc
+        //         _ => "#000000",
+        //     }
+        // }
 
         let colspan = if self.hspan > 1 {
             format!(" colspan=\"{}\"", self.hspan)
@@ -278,24 +276,24 @@ impl Cell {
 
         // Process style properties like color
         let mut styles = String::new();
-        for style in &self.style {
-            match style {
-                Attr::Bold => styles += "font-weight: bold;",
-                Attr::Italic(true) => styles += "font-style: italic;",
-                Attr::Underline(true) => styles += "text-decoration: underline;",
-                Attr::ForegroundColor(c) => {
-                    styles += "color: ";
-                    styles += color2hex(*c);
-                    styles += ";";
-                }
-                Attr::BackgroundColor(c) => {
-                    styles += "background-color: ";
-                    styles += color2hex(*c);
-                    styles += ";";
-                }
-                _ => {}
-            }
-        }
+        // for style in &self.style {
+        //     match style {
+        //         Attr::Bold => styles += "font-weight: bold;",
+        //         Attr::Italic(true) => styles += "font-style: italic;",
+        //         Attr::Underline(true) => styles += "text-decoration: underline;",
+        //         Attr::ForegroundColor(c) => {
+        //             styles += "color: ";
+        //             styles += color2hex(*c);
+        //             styles += ";";
+        //         }
+        //         Attr::BackgroundColor(c) => {
+        //             styles += "background-color: ";
+        //             styles += color2hex(*c);
+        //             styles += ";";
+        //         }
+        //         _ => {}
+        //     }
+        // }
         // Process alignment
         match self.align {
             Alignment::LEFT => styles += "text-align: left;",
@@ -343,7 +341,7 @@ impl Default for Cell {
             content: vec!["".to_string(); 1],
             width: 0,
             align: Alignment::LEFT,
-            style: Vec::new(),
+            style: Style::new(),
             hspan: 1,
         }
     }
